@@ -1,0 +1,27 @@
+preprocessing:
+  input_parquet_path: "data/processed/hotel_bookings.parquet"
+  output_parquet_path: "data/features/hotel_bookings_features.parquet"
+  target_column: "is_canceled"
+  
+  drop_columns:
+    - "reservation_status"        
+    - "reservation_status_date"   
+    - "company"                   
+    - "agent"                     
+    
+  categorical_columns:
+    - "hotel"
+    - "meal"
+    - "market_segment"
+    - "distribution_channel"
+    - "reserved_room_type"
+    - "deposit_type"
+    - "customer_type"
+    
+  numerical_columns:
+    - "lead_time"
+    - "stays_in_weekend_nights"
+    - "stays_in_week_nights"
+    - "adults"
+    - "previous_cancellations"
+    - "adr"

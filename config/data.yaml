@@ -1,0 +1,5 @@
+ingestion:
+  raw_data_source: "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-02-11/hotels.csv"
+  local_raw_path: "data/raw/hotel_bookings.csv"
+  output_parquet_path: "data/processed/hotel_bookings.parquet"
+  target_column: "is_canceled"

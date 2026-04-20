@@ -1,0 +1,15 @@
+quality:
+  input_parquet_path: "data/processed/hotel_bookings.parquet"
+  report_output_path: "outputs/quality/quality_report.json"
+  expectations:
+    - column: "is_canceled"
+      type: "not_null"
+    - column: "is_canceled"
+      type: "values_in_set"
+      values: [0, 1]
+    - column: "lead_time"
+      type: "min_value"
+      value: 0
+    - column: "adults"
+      type: "min_value"
+      value: 0

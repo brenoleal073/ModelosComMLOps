@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Técnico MLOps - Previsão de Cancelamento de Reservas</title>
+    <style>
+        @page { size: A4; margin: 20mm; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: auto; padding: 20px; background-color: #f4f7f6; }
+        .container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        header { border-bottom: 3px solid #1a3a5f; margin-bottom: 30px; padding-bottom: 20px; text-align: center; }
+        h1 { color: #1a3a5f; margin: 0; font-size: 24pt; }
+        h2 { color: #2980b9; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-top: 40px; text-transform: uppercase; font-size: 16pt; }
+        h3 { color: #1a3a5f; margin-top: 25px; font-size: 13pt; }
+        .rubrica-box { background: #e8f4f8; border-left: 5px solid #3498db; padding: 15px; margin: 20px 0; font-style: italic; font-size: 0.95em; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #1a3a5f; color: white; }
+        .code-file { font-family: 'Courier New', Courier, monospace; background: #eee; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .highlight { color: #d35400; font-weight: bold; }
+        footer { margin-top: 50px; text-align: center; font-size: 0.8em; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Relatório de Engenharia de Machine Learning</h1>
+            <p>Projeto: Previsão de Cancelamento de Reservas Hoteleiras (MLOps Pipeline)</p>
+        </header>
+
+        <section id="introducao">
+            <h2>1. Estrutura do Projeto e Contexto de Negócio</h2>
+            <div class="rubrica-box">
+                Foco: Integração com o negócio, organização de código e planejamento orientado à entrega.
+            </div>
+            <h3>Contexto e Objetivos</h3>
+            <p>O cancelamento de reservas é um dos principais desafios financeiros da indústria hoteleira. O objetivo deste projeto é desenvolver uma solução de Machine Learning capaz de prever o risco de cancelamento no momento da reserva, permitindo que o hotel adote estratégias de <em>Revenue Management</em>, como overbooking controlado ou campanhas de retenção.</p>
+            
+            <h3>Decisão de Engenharia: Política vs. Mecanismo</h3>
+            <p>O projeto foi estruturado utilizando o padrão de design que separa a <strong>Política</strong> (regras de negócio e hiperparâmetros definidos em arquivos <span class="code-file">.yaml</span>) do <strong>Mecanismo</strong> (scripts Python reutilizáveis). Esta abordagem reduz a dependência de notebooks e garante que o fluxo seja automatizado e independente de ambiente, utilizando a classe centralizadora <span class="code-file">PipelineContext</span>.</p>
+        </section>
+
+        <section id="pipelines">
+            <h2>2. Pipelines de Dados e Prevenção de Overfitting</h2>
+            <div class="rubrica-box">
+                Foco: Qualidade de dados, prevenção de Data Leakage e redução de dimensionalidade (PCA).
+            </div>
+            <h3>Prevenção de Data Leakage</h3>
+            <p>Um erro comum neste dataset é a presença de colunas como <span class="code-file">reservation_status</span>. No script <span class="code-file">preprocessamento.py</span>, realizamos a remoção cirúrgica de variáveis que ocorrem <em>após</em> o fato (o cancelamento), garantindo que o modelo aprenda apenas com informações disponíveis no momento da reserva.</p>
+
+            <h3>Pipeline de Features e Redução de Dimensionalidade</h3>
+            <p>Implementamos um <span class="code-file">ColumnTransformer</span> robusto que integra:</p>
+            <ul>
+                <li><strong>Imputação:</strong> Tratamento automático de nulos via mediana (numéricos) e constantes (categóricos).</li>
+                <li><strong>Codificação:</strong> One-Hot Encoding com tratamento de categorias desconhecidas em produção.</li>
+                <li><strong>PCA:</strong> Implementamos a redução de dimensionalidade opcional via configuração. Observamos que, embora o PCA reduza o custo computacional, ele impactou negativamente o <strong>Recall</strong>, o que justificou a manutenção do modelo Baseline para a versão final de produção.</li>
+            </ul>
+        </section>
+
+        <section id="experimentacao">
+            <h2>3. Experimentação Rastreável com MLflow</h2>
+            <div class="rubrica-box">
+                Foco: Reprodutibilidade, comparação de modelos e ajuste de hiperparâmetros.
+            </div>
+            <h3>Comparação Sistemática</h3>
+            <p>Utilizamos o <strong>MLflow</strong> para registrar todas as métricas (Precision, Recall, F1, AUC). Foram comparadas três abordagens principais:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Experimento</th>
+                        <th>F1-Score</th>
+                        <th>ROC-AUC</th>
+                        <th>Justificativa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Random Forest (Baseline)</td>
+                        <td>0.812</td>
+                        <td>0.935</td>
+                        <td>Sólido, mas com parâmetros padrão.</td>
+                    </tr>
+                    <tr>
+                        <td>Random Forest + PCA</td>
+                        <td>0.763</td>
+                        <td>0.904</td>
+                        <td>Perda de performance significativa.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RF Tuned (Final)</strong></td>
+                        <td><strong>0.831</strong></td>
+                        <td><strong>0.945</strong></td>
+                        <td>Melhor equilíbrio via RandomizedSearchCV.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>O ajuste de hiperparâmetros via <strong>RandomizedSearchCV</strong> com Validação Cruzada (3-folds) garantiu a generalização do modelo, mitigando o risco de overfitting detectado em execuções preliminares.</p>
+        </section>
+
+        <section id="operacionalizacao">
+            <h2>4. Operacionalização e Ciclo de Vida</h2>
+            <div class="rubrica-box">
+                Foco: Persistência, inferência funcional (FastAPI) e monitoramento de Drift.
+            </div>
+            <h3>Arquitetura de Serving</h3>
+            <p>Em vez de utilizar o servidor padrão do MLflow, optamos pelo <strong>FastAPI</strong> por ser uma solução assíncrona de alta performance. A API foi desenhada para buscar o modelo "Campeão" diretamente do banco de dados do MLflow, garantindo que o deploy seja desacoplado do treinamento.</p>
+            
+            <h3>Visão de Ciclo de Vida</h3>
+            <p>Para a operação contínua, o relatório propõe:</p>
+            <ul>
+                <li><strong>Detecção de Drift:</strong> Monitoramento das distribuições de <em>lead_time</em> (Data Drift) e da relação entre depósitos e cancelamentos (Concept Drift).</li>
+                <li><strong>Estratégia de Retreino:</strong> Gatilhos automáticos baseados na degradação da métrica F1-Score em dados reais coletados via logs de inferência.</li>
+            </ul>
+        </section>
+
+        <section id="conclusao">
+            <h2>Conclusão</h2>
+            <p>O projeto demonstra a transição de um modelo estatístico isolado para um sistema de engenharia robusto. A solução é rastreável, versionada e pronta para escala, cumprindo integralmente os requisitos de maturidade técnica e responsabilidade profissional exigidos pela disciplina.</p>
+        </section>
+
+        <footer>
+            <p>Relatório Gerado por Engenheiro de ML - Abril de 2026</p>
+        </footer>
+    </div>
+</body>
+</html>

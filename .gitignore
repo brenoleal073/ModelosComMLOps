@@ -1,0 +1,16 @@
+# Ambientes Virtuais
+.venv/
+venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Pastas de Dados (Não subimos os arquivos pesados)
+data/raw/*.csv
+data/processed/*.parquet
+data/features/*.parquet
+
+# Modelos e MLflow (Ignoramos as pastas pesadas de artefatos)
+mlruns/
+outputs/

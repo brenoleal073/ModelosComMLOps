@@ -1,0 +1,21 @@
+modeling:
+  input_parquet_path: "data/features/hotel_bookings_features.parquet"
+  target_column: "is_canceled"
+  test_size: 0.2
+  random_state: 42
+  
+  mlflow_tracking_uri: "sqlite:///mlruns.db"
+  experiment_name: "hotel_cancellation_prediction"
+  
+  use_pca: false
+  pca_components: 15
+  
+  hyperparameter_tuning:
+    enable: true
+    cv_folds: 3
+    n_iter: 5
+    scoring: "f1"
+    param_distributions:
+      classifier__n_estimators: [50, 100, 200]
+      classifier__max_depth: [10, 15, 20]
+      classifier__class_weight: ["balanced", "balanced_subsample"]
